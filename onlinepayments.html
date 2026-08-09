@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic Lumina - Online Payment</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            /* Premium Red & White Theme */
+            --bg-main: #f0f4f8; 
+            --surface-card: #ffffff;
+            --sidebar-bg: #ffffff;
+            
+            --primary-red: #d32f2f; 
+            --primary-red-dark: #b71c1c;
+            --primary-red-soft: #fce8e6;
+            
+            --text-heading: #0f172a;
+            --text-body: #334155;
+            --text-muted: #64748b;
+            --text-subtle: #94a3b8;
+            
+            --border-light: #f1f5f9;
+            
+            --shadow-subtle: 0 4px 12px rgba(0, 0, 0, 0.04);
+            --shadow-card: 0 12px 24px rgba(0, 0, 0, 0.06);
+            --shadow-red: 0 12px 24px rgba(211, 47, 47, 0.25);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background-color: var(--bg-main); color: var(--text-body); display: flex; min-height: 100vh; overflow-x: hidden; }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            position: fixed; top: 0; left: 0; height: 100vh; width: 280px;
+            background-color: var(--sidebar-bg); padding: 32px 24px;
+            display: flex; flex-direction: column; border-right: 1px solid var(--border-light);
+            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.02); transform: translateX(-100%);
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1); z-index: 1005;
+        }
+        .sidebar.open { transform: translateX(0); }
+        .brand-container { margin-bottom: 40px; display: flex; align-items: center; gap: 14px; }
+        .brand-logo { background: linear-gradient(135deg, var(--primary-red), var(--primary-red-dark)); color: white; width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: var(--shadow-red); }
+        .brand-text h1 { font-size: 18px; font-weight: 800; line-height: 1.1; color: var(--text-heading); letter-spacing: -0.02em; }
+        .brand-text p { font-size: 10px; font-weight: 700; color: var(--primary-red); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 2px; }
+
+        .nav-menu { list-style: none; flex-grow: 1; }
+        .nav-item { display: flex; align-items: center; padding: 12px 16px; margin-bottom: 6px; border-radius: 12px; color: var(--text-muted); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+        .nav-item i { width: 24px; font-size: 17px; margin-right: 12px; transition: 0.2s; }
+        .nav-item.active { background: var(--primary-red-soft); color: var(--primary-red); }
+        .nav-item:hover:not(.active) { background: #f8fafc; color: var(--text-heading); }
+        .sidebar-divider { height: 1px; background: var(--border-light); margin: 24px 0; }
+
+        /* --- Overlays --- */
+        .overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); opacity: 0; visibility: hidden; transition: all 0.3s ease; z-index: 998; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+        .overlay.active { opacity: 1; visibility: visible; }
+
+        /* --- Main Content & Red Top Splash --- */
+        .main-content { flex-grow: 1; width: 100%; padding: 24px 32px; transition: 0.3s; max-width: 1200px; margin: 0 auto; position: relative; }
+        
+        .top-red-bg { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 210px; 
+            background: linear-gradient(135deg, var(--primary-red) 0%, var(--primary-red-dark) 100%); 
+            border-bottom-left-radius: 35px; border-bottom-right-radius: 35px; z-index: 0; 
+        }
+        .content-wrapper { position: relative; z-index: 1; }
+
+        /* --- Top Bar --- */
+        .top-bar { display: flex; align-items: center; margin-bottom: 0px; position: relative; z-index: 1001; }
+        .menu-toggle { background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(8px); border: none; border-radius: 12px; font-size: 20px; cursor: pointer; color: white; padding: 10px 14px; box-shadow: var(--shadow-subtle); transition: 0.2s; }
+        .menu-toggle:hover { background: rgba(255, 255, 255, 0.25); transform: scale(1.05); }
+        .menu-toggle i { transition: transform 0.2s ease-in-out; }
+
+        /* --- Dedicated Page Header --- */
+        .page-header { 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            text-align: center; margin-top: -30px; margin-bottom: 35px; color: white; 
+        }
+        .page-header p { 
+            background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(5px);
+            color: white; padding: 6px 16px; border-radius: 16px; 
+            font-size: 11px; font-weight: 800; text-transform: uppercase; 
+            letter-spacing: 1.5px; margin-bottom: 10px; box-shadow: var(--shadow-sm); 
+        }
+        .page-header h2 { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0; }
+
+        /* --- Payment Gateway Container --- */
+        .payment-container {
+            background: var(--surface-card);
+            border-radius: 24px;
+            box-shadow: var(--shadow-card);
+            border: 1px solid var(--border-light);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .payment-header {
+            background: #f8fafc;
+            color: var(--text-heading);
+            padding: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 18px;
+            font-weight: 800;
+            border-bottom: 1px solid var(--border-light);
+        }
+        .payment-header i { color: var(--primary-red); font-size: 22px; }
+
+        .payment-body { padding: 28px; }
+
+        /* --- Gateway Filters --- */
+        .gateway-filters {
+            display: flex; gap: 12px; margin-bottom: 30px; overflow-x: auto;
+            padding-bottom: 10px; scrollbar-width: none;
+        }
+        .gateway-filters::-webkit-scrollbar { display: none; }
+
+        .filter-btn {
+            background: #f8fafc;
+            border: 1px solid var(--border-light);
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-muted);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .filter-btn.active { background: var(--primary-red-soft); color: var(--primary-red); border-color: var(--primary-red-soft); }
+        .filter-btn:hover:not(.active) { background: #ffffff; box-shadow: var(--shadow-subtle); border-color: var(--text-subtle); }
+
+        /* --- Payment Categories --- */
+        .category-section { margin-bottom: 35px; }
+        .category-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-heading);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .category-title::after {
+            content: ''; flex-grow: 1; height: 1px; background: var(--border-light);
+        }
+
+        .payment-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 16px; }
+
+        /* --- Payment Method Cards --- */
+        .method-card {
+            background: var(--surface-card);
+            border-radius: 16px;
+            height: 85px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 2px solid var(--border-light);
+            box-shadow: var(--shadow-subtle);
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.2);
+        }
+
+        .method-card:hover:not(.highlight) { transform: translateY(-4px); box-shadow: var(--shadow-card); border-color: var(--text-subtle); }
+        .method-card:active { transform: translateY(0) scale(0.96); }
+
+        /* Dynamic Selection Outline */
+        .method-card.highlight { 
+            border-color: var(--primary-red); 
+            background: var(--primary-red-soft);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-red);
+        }
+
+        /* --- Branding Logos --- */
+        .logo-visa { color: #1a1f71; font-size: 38px; }
+        .logo-mastercard { color: #eb001b; font-size: 38px; }
+        .logo-amex { color: #2e77bc; font-size: 38px; }
+        .logo-text { font-size: 12px; font-weight: 800; text-align: center; line-height: 1.1; margin-top: 6px; }
+        
+        .brand-bkash { color: #e2136e; font-weight: 900; font-size: 22px; font-style: italic; display: flex; flex-direction: column; align-items: center; }
+        .brand-rocket { color: #8c1596; font-weight: 800; font-size: 18px; display: flex; flex-direction: column; align-items: center; }
+        .brand-dbbl { color: #005A9C; }
+        .brand-qcash { color: #ed1c24; font-weight: 900; font-style: italic; font-size: 20px; }
+        .brand-city { color: #ed1c24; }
+        .brand-islami { color: #0f7a42; }
+        .brand-mtb { color: #006a4d; }
+
+        /* Responsive */
+        @media (min-width: 900px) { 
+            .main-content { padding: 32px 48px; } 
+        }
+        @media (max-width: 768px) {
+            .main-content { padding: 16px 12px; }
+            .payment-body { padding: 20px 16px; }
+            .payment-grid { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+            .method-card { height: 80px; }
+            .top-red-bg { height: 180px; }
+            .page-header { margin-top: -30px; margin-bottom: 30px; }
+            .page-header h2 { font-size: 24px; }
+        }
+        @media (max-width: 440px) {
+            .payment-grid { grid-template-columns: repeat(2, 1fr); }
+            .page-header { margin-top: -35px; } /* Even tighter on extra small screens */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="overlay" id="overlay" onclick="closeAll()"></div>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="brand-container">
+            <div class="brand-logo"><i class="fas fa-graduation-cap"></i></div>
+            <div class="brand-text">
+                <h1>Academic</h1>
+                <p>DadinCoder</p>
+            </div>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item" onclick="window.location.href='index.html'"><i class="fas fa-home"></i><span>Dashboard</span></li>
+            <li class="nav-item" onclick="window.location.href='courses.html'"><i class="fas fa-book-open"></i><span>Registered Courses</span></li>
+            <li class="nav-item" onclick="window.location.href='profile.html'"><i class="far fa-user-circle"></i><span>Academic Profile</span></li>
+            <li class="nav-item" onclick="window.location.href='results.html'"><i class="fas fa-chart-line"></i><span>Results & Performance</span></li>
+            <li class="nav-item" onclick="window.location.href='payments.html'"><i class="fas fa-wallet"></i><span>Finance & Payments</span></li>
+            <li class="nav-item active" onclick="window.location.href='onlinepayments.html'"><i class="fas fa-credit-card"></i><span>Online Payment</span></li>
+        </ul>
+        <div class="sidebar-divider"></div>
+        <ul class="nav-menu">
+            <li class="nav-item" onclick="window.location.href='settings.html'"><i class="fas fa-cog"></i><span>Settings</span></li>
+            <li class="nav-item"><i class="fas fa-sign-out-alt"></i><span>Log Out</span></li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <div class="top-red-bg"></div>
+        
+        <div class="content-wrapper">
+            <header class="top-bar">
+                <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars" id="menuIcon"></i></button>
+            </header>
+
+            <section class="page-header">
+                <p>Secure Gateway</p>
+                <h2>Online Payment</h2>
+            </section>
+
+            <section class="payment-container">
+                <div class="payment-header">
+                    <span>Select Payment Method</span>
+                    <i class="far fa-credit-card"></i>
+                </div>
+                
+                <div class="payment-body">
+                    <!-- Top Filters -->
+                    <div class="gateway-filters">
+                        <button class="filter-btn active">All Gateways</button>
+                        <button class="filter-btn"><i class="fas fa-building" style="color: #F8A51B;"></i> BRAC</button>
+                        <button class="filter-btn"><i class="fas fa-city" style="color: #ed1c24;"></i> City</button>
+                        <button class="filter-btn"><i class="fas fa-university" style="color: #005A9C;"></i> DBBL</button>
+                    </div>
+
+                    <!-- Debit/Credit Cards -->
+                    <div class="category-section">
+                        <div class="category-title">Debit/Credit Cards</div>
+                        <div class="payment-grid">
+                            <div class="method-card">
+                                <i class="fab fa-cc-visa logo-visa"></i>
+                            </div>
+                            <div class="method-card">
+                                <i class="fab fa-cc-mastercard logo-mastercard"></i>
+                            </div>
+                            <div class="method-card">
+                                <i class="fab fa-cc-amex logo-amex"></i>
+                            </div>
+                            <div class="method-card">
+                                <div class="logo-text brand-dbbl" style="font-size: 13px;">
+                                    <i class="fas fa-wifi" style="font-size: 16px; margin-bottom: 4px;"></i><br>DBBL Nexus
+                                </div>
+                            </div>
+                            <div class="method-card">
+                                <div class="brand-qcash">
+                                    <i class="fas fa-q"></i>
+                                </div>
+                                <div class="logo-text brand-qcash" style="font-size: 10px;">cash</div>
+                            </div>
+                            <div class="method-card">
+                                <div class="logo-text" style="color: #00796b;">
+                                    <i class="fas fa-tachometer-alt" style="color: var(--primary-red); font-size: 20px; margin-bottom: 4px;"></i><br>fastcash
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mobile Banking -->
+                    <div class="category-section">
+                        <div class="category-title">Mobile Banking</div>
+                        <div class="payment-grid">
+                            <div class="method-card">
+                                <div class="brand-bkash">
+                                    <i class="fas fa-dove"></i>
+                                    <span style="font-size: 13px; margin-top: 4px;">bKash</span>
+                                </div>
+                            </div>
+                            <div class="method-card">
+                                <div class="brand-rocket">
+                                    <i class="fas fa-rocket"></i>
+                                    <span style="font-size: 12px; margin-top: 4px;">Rocket</span>
+                                </div>
+                            </div>
+                            <div class="method-card">
+                                <div class="logo-text" style="color: #00796b;">
+                                    <i class="fas fa-home" style="font-size: 22px; margin-bottom: 4px;"></i><br>IFIC
+                                </div>
+                            </div>
+                            <div class="method-card">
+                                <div class="logo-text brand-islami">
+                                    <i class="fas fa-mobile-alt" style="font-size: 22px; color: #f39c12; margin-bottom: 4px;"></i><br>mCash
+                                </div>
+                            </div>
+                            <div class="method-card">
+                                <div class="logo-text" style="color: #3498db; font-size: 13px;">
+                                    <i class="fas fa-wallet" style="color: #2ecc71; margin-bottom: 4px;"></i><br>MYCash
+                                </div>
+                            </div>
+                            <div class="method-card">
+                                <div class="logo-text brand-city">
+                                    <div style="background: #ed1c24; color: white; padding: 2px 6px; border-radius: 4px; margin-bottom: 4px; font-size: 10px;">AB</div>
+                                    AB Direct
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Internet Banking -->
+                    <div class="category-section" style="margin-bottom: 0;">
+                        <div class="category-title">Internet Banking</div>
+                        <div class="payment-grid">
+                            <div class="method-card">
+                                <div class="logo-text brand-city">
+                                    <i class="fas fa-globe" style="font-size: 22px; margin-bottom: 4px;"></i><br>citytouch
+                                </div>
+                            </div>
+                            <div class="method-card">
+                                <div class="logo-text brand-islami">
+                                    <i class="fas fa-mosque" style="font-size: 22px; margin-bottom: 4px;"></i><br>Islami Bank
+                                </div>
+                            </div>
+                            <div class="method-card">
+                                <div class="logo-text brand-mtb">
+                                    <i class="fas fa-mountain" style="font-size: 22px; margin-bottom: 4px; color: var(--primary-red);"></i><br>MTB
+                                </div>
+                            </div>
+                            <div class="method-card">
+                                <div class="logo-text" style="color: #2980b9;">
+                                    <i class="fas fa-university" style="font-size: 22px; margin-bottom: 4px;"></i><br>Bank Asia
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        const menuIcon = document.getElementById('menuIcon');
+
+        function toggleSidebar() { 
+            sidebar.classList.toggle('open'); 
+            overlay.classList.toggle('active'); 
+            
+            if (sidebar.classList.contains('open')) {
+                menuIcon.classList.remove('fa-bars');
+                menuIcon.classList.add('fa-times');
+            } else {
+                menuIcon.classList.remove('fa-times');
+                menuIcon.classList.add('fa-bars');
+            }
+        }
+
+        function closeAll() {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+            menuIcon.classList.remove('fa-times');
+            menuIcon.classList.add('fa-bars');
+        }
+
+        // Filter button visual logic
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+
+        // Interactive Selection Logic for Payment Methods
+        const methodCards = document.querySelectorAll('.method-card');
+        methodCards.forEach(card => {
+            card.addEventListener('click', () => {
+                methodCards.forEach(c => c.classList.remove('highlight'));
+                card.classList.add('highlight');
+            });
+        });
+    </script>
+</body>
+</html>

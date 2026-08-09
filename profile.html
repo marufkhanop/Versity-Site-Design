@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic Lumina - Academic Profile</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            /* Premium Red & White Theme */
+            --bg-main: #f0f4f8; 
+            --surface-card: #ffffff;
+            --sidebar-bg: #ffffff;
+            
+            --primary-red: #d32f2f; 
+            --primary-red-dark: #b71c1c;
+            --primary-red-soft: #fce8e6;
+            
+            --success-green: #2a9d8f;
+            
+            --text-heading: #0f172a;
+            --text-body: #334155;
+            --text-muted: #64748b;
+            --text-subtle: #94a3b8;
+            
+            --border-light: #f1f5f9;
+            --border-separator: #cbd5e1;
+            
+            --shadow-subtle: 0 4px 12px rgba(0, 0, 0, 0.04);
+            --shadow-card: 0 12px 24px rgba(0, 0, 0, 0.06);
+            --shadow-red: 0 8px 16px rgba(211, 47, 47, 0.25);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background-color: var(--bg-main); color: var(--text-body); display: flex; min-height: 100vh; overflow-x: hidden; }
+
+        /* --- Smooth Interactions --- */
+        .smooth-card { transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); cursor: pointer; }
+        .smooth-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-card); }
+        .smooth-card:active { transform: scale(0.98); }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            position: fixed; top: 0; left: 0; height: 100vh; width: 280px;
+            background-color: var(--sidebar-bg); padding: 32px 24px;
+            display: flex; flex-direction: column; border-right: 1px solid var(--border-light);
+            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.02); transform: translateX(-100%);
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1); z-index: 1005;
+        }
+        .sidebar.open { transform: translateX(0); }
+        .brand-container { margin-bottom: 40px; display: flex; align-items: center; gap: 14px; }
+        .brand-logo { background: linear-gradient(135deg, var(--primary-red), var(--primary-red-dark)); color: white; width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: var(--shadow-red); }
+        .brand-text h1 { font-size: 18px; font-weight: 800; line-height: 1.1; color: var(--text-heading); letter-spacing: -0.02em; }
+        .brand-text p { font-size: 10px; font-weight: 700; color: var(--primary-red); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 2px; }
+
+        .nav-menu { list-style: none; flex-grow: 1; }
+        .nav-item { display: flex; align-items: center; padding: 12px 16px; margin-bottom: 6px; border-radius: 12px; color: var(--text-muted); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+        .nav-item i { width: 24px; font-size: 17px; margin-right: 12px; transition: 0.2s; }
+        .nav-item.active { background: var(--primary-red-soft); color: var(--primary-red); }
+        .nav-item:hover:not(.active) { background: #f8fafc; color: var(--text-heading); }
+        .sidebar-divider { height: 1px; background: var(--border-light); margin: 24px 0; }
+
+        /* --- Overlays --- */
+        .overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); opacity: 0; visibility: hidden; transition: all 0.3s ease; z-index: 998; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+        .overlay.active { opacity: 1; visibility: visible; }
+
+        /* --- Main Content --- */
+        .main-content { flex-grow: 1; width: 100%; padding: 24px 32px; transition: 0.3s; max-width: 1000px; margin: 0 auto; position: relative; }
+        .content-wrapper { position: relative; z-index: 1; }
+
+        /* --- Top Bar --- */
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; position: relative; z-index: 1001; }
+        .menu-toggle { background: var(--surface-card); border: 1px solid var(--border-light); border-radius: 12px; font-size: 20px; cursor: pointer; color: var(--text-heading); padding: 8px 12px; box-shadow: var(--shadow-subtle); transition: 0.2s; }
+        .menu-toggle:hover { color: var(--primary-red); border-color: var(--primary-red-soft); }
+
+        .top-action-btn { background: var(--surface-card); border: 1px solid var(--border-light); border-radius: 12px; padding: 7px 14px; color: var(--text-heading); font-size: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 6px; box-shadow: var(--shadow-subtle); }
+        .top-action-btn:hover { color: var(--primary-red); border-color: var(--primary-red-soft); transform: translateY(-2px); }
+
+        /* --- Premium Red Profile Hero Card --- */
+        .profile-card { 
+            background: linear-gradient(135deg, var(--primary-red) 0%, var(--primary-red-dark) 100%); 
+            border-radius: 24px; padding: 32px 24px; 
+            text-align: center; margin-bottom: 24px; 
+            box-shadow: var(--shadow-red); 
+            color: #ffffff;
+            position: relative;
+            overflow: hidden;
+        }
+        .profile-card::after { 
+            content: ''; position: absolute; right: -30px; top: -50px; 
+            width: 180px; height: 180px; background: rgba(255,255,255,0.08); 
+            border-radius: 50%; pointer-events: none;
+        }
+
+        .profile-avatar-container { 
+            width: 86px; height: 86px; border-radius: 50%; margin: 0 auto 14px;
+            background: rgba(255, 255, 255, 0.2); padding: 3px;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+        .profile-avatar-container img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+        
+        .profile-card h2 { font-size: 24px; font-weight: 800; color: #ffffff; margin-bottom: 4px; letter-spacing: -0.02em; }
+        .profile-card h3 { 
+            font-size: 13px; font-weight: 700; color: #ffffff; 
+            background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(8px); 
+            display: inline-block; padding: 4px 14px; border-radius: 8px; 
+            margin-bottom: 10px; letter-spacing: 0.5px; 
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+        .profile-card p { font-size: 13px; color: rgba(255, 255, 255, 0.9); font-weight: 600; line-height: 1.5; }
+
+        /* --- Tabs System (Pill Style) --- */
+        .tabs-container { margin-bottom: 24px; }
+        .tab-headers-wrapper { overflow-x: auto; scrollbar-width: none; padding-bottom: 10px; margin-bottom: 24px; }
+        .tab-headers-wrapper::-webkit-scrollbar { display: none; }
+        .tab-headers { display: flex; gap: 10px; width: max-content; }
+        
+        .tab-btn {
+            background: var(--surface-card); border: 1px solid var(--border-light); padding: 12px 20px;
+            font-size: 13px; font-weight: 700; color: var(--text-muted);
+            border-radius: 14px; cursor: pointer; transition: all 0.2s;
+            box-shadow: var(--shadow-subtle);
+        }
+        .tab-btn:hover:not(.active) { border-color: var(--primary-red-soft); color: var(--primary-red); }
+        .tab-btn.active { background: var(--primary-red); color: white; border-color: var(--primary-red); box-shadow: var(--shadow-red); }
+
+        .tab-content-wrapper {
+            background: var(--surface-card); border-radius: 20px; padding: 24px;
+            box-shadow: var(--shadow-subtle); border: 1px solid var(--border-light);
+        }
+        .tab-content { display: none; animation: fadeIn 0.3s ease-out; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- Data Layouts --- */
+        .section-header { font-size: 16px; font-weight: 800; color: var(--text-heading); margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border-separator); display: flex; align-items: center; gap: 8px; }
+        .section-header i { color: var(--primary-red); }
+        .section-header:not(:first-child) { margin-top: 30px; }
+
+        .data-grid { display: grid; grid-template-columns: 1fr; gap: 0; }
+        .data-row { display: grid; grid-template-columns: 200px 1fr; gap: 15px; padding: 12px 0; border-bottom: 1px dashed var(--border-separator); align-items: center; }
+        .data-row:last-child { border-bottom: none; }
+        
+        .data-label { font-size: 14px; font-weight: 600; color: var(--text-muted); }
+        .data-value { font-size: 14px; font-weight: 800; color: var(--text-heading); }
+        .data-empty { color: var(--primary-red); background: var(--primary-red-soft); padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 12px; display: inline-block; width: fit-content; }
+
+        /* Education Cards */
+        .edu-card { background: #f8fafc; border: 1px solid var(--border-light); border-radius: 16px; padding: 20px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: flex-start; transition: 0.2s; }
+        .edu-card:hover { border-color: var(--primary-red-soft); box-shadow: var(--shadow-subtle); }
+        .edu-main h4 { font-size: 16px; font-weight: 800; color: var(--primary-red); margin-bottom: 6px; }
+        .edu-main p { font-size: 14px; font-weight: 600; color: var(--text-heading); }
+        .edu-meta { text-align: right; }
+        .edu-meta .board { font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; }
+        .edu-meta .result { font-size: 15px; font-weight: 800; color: var(--primary-red); background: var(--primary-red-soft); padding: 4px 10px; border-radius: 8px; display: inline-block; }
+
+        /* Media Queries */
+        @media (min-width: 900px) { 
+            .main-content { padding: 32px 48px; } 
+        }
+        @media (max-width: 768px) {
+            .main-content { padding: 16px 12px; }
+            .tab-content-wrapper { padding: 16px; }
+            .profile-card { padding: 24px 16px; }
+            
+            .data-row { grid-template-columns: 1fr; gap: 4px; padding: 12px 0; border-bottom: 1px dashed var(--border-separator); }
+            .data-label { font-size: 12px; color: var(--text-muted); }
+            .data-value { font-size: 13px; }
+            
+            .edu-card { flex-direction: column; gap: 12px; padding: 16px; }
+            .edu-meta { text-align: left; display: flex; justify-content: space-between; width: 100%; align-items: center; border-top: 1px dashed var(--border-separator); padding-top: 10px; }
+            .edu-meta .board { margin-bottom: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="overlay" id="overlay" onclick="closeAll()"></div>
+
+    <!-- Sidebar Configuration -->
+    <aside class="sidebar" id="sidebar">
+        <div class="brand-container">
+            <div class="brand-logo"><i class="fas fa-graduation-cap"></i></div>
+            <div class="brand-text">
+                <h1>Academic</h1>
+                <p>DadinCoder</p>
+            </div>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item" onclick="window.location.href='index.html'"><i class="fas fa-home"></i><span>Dashboard</span></li>
+            <li class="nav-item" onclick="window.location.href='courses.html'"><i class="fas fa-book-open"></i><span>Registered Courses</span></li>
+            <li class="nav-item active" onclick="window.location.href='profile.html'"><i class="far fa-user-circle"></i><span>Academic Profile</span></li>
+            <li class="nav-item" onclick="window.location.href='results.html'"><i class="fas fa-chart-line"></i><span>Results & Performance</span></li>
+            <li class="nav-item" onclick="window.location.href='payments.html'"><i class="fas fa-wallet"></i><span>Finance & Payments</span></li>
+            <li class="nav-item" onclick="window.location.href='onlinepayments.html'"><i class="fas fa-credit-card"></i><span>Online Payment</span></li>
+        </ul>
+        <div class="sidebar-divider"></div>
+        <ul class="nav-menu">
+            <li class="nav-item" onclick="window.location.href='settings.html'"><i class="fas fa-cog"></i><span>Settings</span></li>
+            <li class="nav-item"><i class="fas fa-sign-out-alt"></i><span>Log Out</span></li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <div class="content-wrapper">
+            <header class="top-bar">
+                <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars" id="menuIcon"></i></button>
+                <button class="top-action-btn smooth-card"><i class="far fa-id-card"></i> Admit Card</button>
+            </header>
+
+            <!-- Premium Red Profile Hero Card -->
+            <section class="profile-card smooth-card">
+                <div class="profile-avatar-container">
+                    <img src="https://ui-avatars.com/api/?name=Maruf+Khan&background=d32f2f&color=ffffff&size=200" alt="Maruf Khan">
+                </div>
+                <h2>Maruf Khan</h2>
+                <h3>02726205101005</h3>
+                <p>BSc in Computer Science & Engineering (Day) (4M)<br>(CSE) &bull; 69th Batch</p>
+            </section>
+
+            <!-- Tabs System -->
+            <section class="tabs-container">
+                <div class="tab-headers-wrapper">
+                    <div class="tab-headers">
+                        <button class="tab-btn active" onclick="switchTab(0)">Personal Information</button>
+                        <button class="tab-btn" onclick="switchTab(1)">Previous Education</button>
+                        <button class="tab-btn" onclick="switchTab(2)">Academic Details</button>
+                    </div>
+                </div>
+                
+                <div class="tab-content-wrapper">
+                    
+                    <!-- TAB 0: Personal -->
+                    <div class="tab-content active" id="contentPersonal">
+                        <div class="section-header"><i class="fas fa-user"></i> Personal Information</div>
+                        <div class="data-grid">
+                            <div class="data-row"><span class="data-label">Full Name:</span><span class="data-value">Maruf Khan</span></div>
+                            <div class="data-row"><span class="data-label">Date of Birth:</span><span class="data-value">03 July 1969</span></div>
+                            <div class="data-row"><span class="data-label">Gender:</span><span class="data-value">Male</span></div>
+                            <div class="data-row"><span class="data-label">Blood Group:</span><span class="data-value">AB+</span></div>
+                            <div class="data-row"><span class="data-label">Nationality:</span><span class="data-value">Bangladeshi</span></div>
+                            <div class="data-row"><span class="data-label">Marital Status:</span><span class="data-value">No</span></div>
+                            <div class="data-row"><span class="data-label">Religion:</span><span class="data-value">Muslim</span></div>
+                        </div>
+
+                        <div class="section-header" style="margin-top: 30px;"><i class="fas fa-users" style="color: var(--primary-red);"></i> Parents & Emergency Information</div>
+                        <div class="data-grid">
+                            <div class="data-row"><span class="data-label">Father's Name:</span><span class="data-value">Shhhhhhh</span></div>
+                            <div class="data-row"><span class="data-label">Father's Mobile:</span><span class="data-empty">Not Provided</span></div>
+                            <div class="data-row"><span class="data-label">Mother's Name:</span><span class="data-value">Shhhhhhh</span></div>
+                            <div class="data-row"><span class="data-label">Mother's Mobile:</span><span class="data-empty">Not Provided</span></div>
+                            <div class="data-row"><span class="data-label">Emergency Contact Name:</span><span class="data-value">Shhhhhhh</span></div>
+                            <div class="data-row"><span class="data-label">Emergency Contact Mobile:</span><span class="data-empty">Required</span></div>
+                            <div class="data-row"><span class="data-label">Emergency Contact Address:</span><span class="data-empty">Not Provided</span></div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 1: Previous Education -->
+                    <div class="tab-content" id="contentEducation">
+                        <div class="section-header"><i class="fas fa-graduation-cap"></i> Academic History</div>
+                        
+                        <div class="edu-card smooth-card">
+                            <div class="edu-main">
+                                <h4>S S C</h4>
+                                <p>Janata Adarsha Bidyapith</p>
+                            </div>
+                            <div class="edu-meta">
+                                <div class="board">Dhaka Board &bull; 2023</div>
+                                <div class="result">GPA: 4.72</div>
+                            </div>
+                        </div>
+
+                        <div class="edu-card smooth-card">
+                            <div class="edu-main">
+                                <h4>H S C</h4>
+                                <p>National College of Education</p>
+                            </div>
+                            <div class="edu-meta">
+                                <div class="board">Dhaka Board &bull; 2025</div>
+                                <div class="result">GPA: 4.42</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 2: Academic -->
+                    <div class="tab-content" id="contentAcademic">
+                        <div class="section-header"><i class="fas fa-university"></i> Program Details</div>
+                        <div class="data-grid">
+                            <div class="data-row">
+                                <span class="data-label">Program:</span>
+                                <span class="data-value">BSc in Computer Science & Engineering (Day) (4M)</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="data-label">Department:</span>
+                                <span class="data-value">Computer Science & Engineering</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="data-label">Core Curriculum:</span>
+                                <span class="data-value" style="line-height: 1.4;">Bachelor of Computer Science & Engineering (Day) (4M) Syllabus (Batch: 68 to Ongoing)</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="data-label">Admission Roll No:</span>
+                                <span class="data-empty">Not Assigned</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="data-label">Date of Admitted:</span>
+                                <span class="data-value">March 10, 2026</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="data-label">Admitted Semester:</span>
+                                <span class="data-value">Summer 2026 (4M)</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="data-label">Graduated Semester:</span>
+                                <span class="data-value" style="color: var(--success-green);">Ongoing</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        const menuIcon = document.getElementById('menuIcon');
+
+        function toggleSidebar() { 
+            sidebar.classList.toggle('open'); 
+            overlay.classList.toggle('active'); 
+            
+            if (sidebar.classList.contains('open')) {
+                menuIcon.classList.remove('fa-bars');
+                menuIcon.classList.add('fa-times');
+            } else {
+                menuIcon.classList.remove('fa-times');
+                menuIcon.classList.add('fa-bars');
+            }
+        }
+        
+        function closeAll() {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+            menuIcon.classList.remove('fa-times');
+            menuIcon.classList.add('fa-bars');
+        }
+
+        // Tab Switching Logic
+        function switchTab(index) {
+            const tabs = document.querySelectorAll('.tab-btn');
+            const contents = document.querySelectorAll('.tab-content');
+
+            tabs.forEach(t => t.classList.remove('active'));
+            contents.forEach(c => c.classList.remove('active'));
+
+            tabs[index].classList.add('active');
+            contents[index].classList.add('active');
+        }
+    </script>
+</body>
+</html>

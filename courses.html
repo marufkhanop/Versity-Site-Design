@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic Lumina - Registered Courses</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            /* Premium Red & White Theme */
+            --bg-main: #f0f4f8; 
+            --surface-card: #ffffff;
+            --sidebar-bg: #ffffff;
+            
+            --primary-red: #d32f2f; 
+            --primary-red-dark: #b71c1c;
+            --primary-red-soft: #fce8e6;
+            
+            --text-heading: #0f172a;
+            --text-body: #334155;
+            --text-muted: #64748b;
+            --text-subtle: #94a3b8;
+            
+            --border-light: #f1f5f9;
+            
+            --shadow-subtle: 0 4px 12px rgba(0, 0, 0, 0.04);
+            --shadow-card: 0 12px 24px rgba(0, 0, 0, 0.06);
+            --shadow-red: 0 8px 16px rgba(211, 47, 47, 0.25);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background-color: var(--bg-main); color: var(--text-body); display: flex; min-height: 100vh; overflow-x: hidden; }
+
+        /* --- Smooth Interactions --- */
+        .smooth-card { transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); cursor: pointer; }
+        .smooth-card:hover { transform: translateY(-4px) scale(1.01); box-shadow: var(--shadow-card); }
+        .smooth-card:active { transform: scale(0.98); }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            position: fixed; top: 0; left: 0; height: 100vh; width: 280px;
+            background-color: var(--sidebar-bg); padding: 32px 24px;
+            display: flex; flex-direction: column; border-right: 1px solid var(--border-light);
+            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.02); transform: translateX(-100%);
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1); z-index: 1005;
+        }
+        .sidebar.open { transform: translateX(0); }
+        .brand-container { margin-bottom: 40px; display: flex; align-items: center; gap: 14px; }
+        .brand-logo { background: linear-gradient(135deg, var(--primary-red), var(--primary-red-dark)); color: white; width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: var(--shadow-red); }
+        .brand-text h1 { font-size: 18px; font-weight: 800; line-height: 1.1; color: var(--text-heading); letter-spacing: -0.02em; }
+        .brand-text p { font-size: 10px; font-weight: 700; color: var(--primary-red); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 2px; }
+
+        .nav-menu { list-style: none; flex-grow: 1; }
+        .nav-item { display: flex; align-items: center; padding: 12px 16px; margin-bottom: 6px; border-radius: 12px; color: var(--text-muted); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+        .nav-item i { width: 24px; font-size: 17px; margin-right: 12px; transition: 0.2s; }
+        .nav-item.active { background: var(--primary-red-soft); color: var(--primary-red); }
+        .nav-item:hover:not(.active) { background: #f8fafc; color: var(--text-heading); }
+        .sidebar-divider { height: 1px; background: var(--border-light); margin: 24px 0; }
+
+        /* --- Overlays --- */
+        .overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); opacity: 0; visibility: hidden; transition: all 0.3s ease; z-index: 998; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+        .overlay.active { opacity: 1; visibility: visible; }
+
+        /* --- Main Content --- */
+        .main-content { flex-grow: 1; width: 100%; padding: 24px 32px; transition: 0.3s; max-width: 1200px; margin: 0 auto; position: relative; }
+        .content-wrapper { position: relative; z-index: 1; }
+
+        /* --- Top Bar & Centered Header --- */
+        .top-bar { display: flex; align-items: center; margin-bottom: 10px; position: relative; z-index: 1001; }
+        .menu-toggle { background: var(--surface-card); border: 1px solid var(--border-light); border-radius: 12px; font-size: 20px; cursor: pointer; color: var(--text-heading); padding: 10px 12px; box-shadow: var(--shadow-subtle); transition: 0.2s; }
+        .menu-toggle:hover { color: var(--primary-red); border-color: var(--primary-red-soft); }
+        
+        .page-header { display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: -30px; margin-bottom: 30px; text-align: center; }
+        .page-header p { 
+            background: linear-gradient(135deg, var(--primary-red) 0%, var(--primary-red-dark) 100%);
+            color: white; padding: 6px 16px; border-radius: 16px; 
+            font-size: 11px; font-weight: 800; text-transform: uppercase; 
+            letter-spacing: 1px; margin-bottom: 12px; box-shadow: var(--shadow-red); 
+        }
+        .page-header h2 { font-size: 26px; font-weight: 800; color: var(--text-heading); letter-spacing: -0.02em; }
+
+        /* --- Custom Select UI --- */
+        .controls-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 15px; z-index: 10; position: relative; }
+        
+        .custom-select-wrapper { position: relative; width: 280px; user-select: none; }
+        .custom-select-trigger { background: var(--surface-card); border: 1px solid var(--border-light); padding: 14px 20px; border-radius: 14px; display: flex; justify-content: space-between; align-items: center; font-size: 14px; font-weight: 700; color: var(--text-heading); cursor: pointer; box-shadow: var(--shadow-subtle); transition: 0.2s; }
+        .custom-select-trigger:hover { border-color: var(--primary-red-soft); }
+        .custom-select-trigger i { color: var(--primary-red); transition: transform 0.3s; }
+        .custom-select-wrapper.open .custom-select-trigger i { transform: rotate(180deg); }
+        
+        .custom-options { position: absolute; top: 110%; left: 0; right: 0; background: var(--surface-card); border-radius: 14px; box-shadow: var(--shadow-card); border: 1px solid var(--border-light); overflow: hidden; opacity: 0; visibility: hidden; transform: translateY(-10px); transition: all 0.3s ease; z-index: 100; max-height: 250px; overflow-y: auto; }
+        .custom-select-wrapper.open .custom-options { opacity: 1; visibility: visible; transform: translateY(0); }
+        .custom-option { padding: 14px 20px; font-size: 13px; font-weight: 600; color: var(--text-body); cursor: pointer; transition: background 0.2s; border-bottom: 1px solid var(--border-light); }
+        .custom-option:last-child { border-bottom: none; }
+        .custom-option:hover { background: #f8fafc; color: var(--primary-red); }
+        .custom-option.selected { background: var(--primary-red-soft); color: var(--primary-red); font-weight: 700; }
+
+        .btn-print { background: var(--surface-card); border: 1px solid var(--border-light); color: var(--text-heading); padding: 14px 24px; border-radius: 14px; font-weight: 700; font-size: 14px; cursor: pointer; box-shadow: var(--shadow-subtle); transition: 0.2s; display: flex; gap: 8px; align-items: center; }
+        .btn-print:hover { border-color: var(--primary-red-soft); color: var(--primary-red); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+
+        /* --- Glass Panel & Info --- */
+        .glass-panel { background: var(--surface-card); border-radius: 20px; padding: 24px; margin-bottom: 24px; box-shadow: var(--shadow-subtle); border: 1px solid var(--border-light); }
+        .section-title { font-size: 16px; font-weight: 800; color: var(--text-heading); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .section-title i { color: var(--primary-red); }
+        
+        .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px 24px; }
+        .info-grid div { display: flex; flex-direction: column; gap: 4px; padding-bottom: 12px; border-bottom: 1px dashed var(--border-light); }
+        .info-grid span { font-size: 11px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .info-grid strong { font-size: 14px; color: var(--text-heading); font-weight: 700; }
+
+        /* --- Course Cards Grid --- */
+        .courses-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+        
+        .course-card { background: var(--surface-card); border-radius: 20px; padding: 20px; border: 1px solid var(--border-light); box-shadow: var(--shadow-subtle); display: flex; flex-direction: column; }
+        .course-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .c-code { font-weight: 800; color: var(--primary-red); font-size: 14px; background: var(--primary-red-soft); padding: 4px 10px; border-radius: 8px; }
+        .c-credit { font-size: 12px; font-weight: 700; color: var(--text-muted); }
+        
+        .c-title { font-size: 16px; font-weight: 700; color: var(--text-heading); line-height: 1.4; margin-bottom: 12px; flex-grow: 1; }
+        .c-status { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: #2a9d8f; background: rgba(42, 157, 143, 0.1); padding: 6px 12px; border-radius: 12px; margin-bottom: 20px; width: fit-content; }
+        
+        .course-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; border-top: 1px solid var(--border-light); padding-top: 16px; }
+        
+        /* Updated highly visible action buttons */
+        .action-btn { 
+            background: #ffffff; 
+            border: 1px solid #94a3b8; 
+            border-radius: 10px; 
+            padding: 10px; 
+            font-size: 13px; 
+            font-weight: 700; 
+            color: var(--text-heading); 
+            cursor: pointer; 
+            transition: 0.2s; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            gap: 8px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.03); 
+        }
+        .action-btn:hover { 
+            background: var(--primary-red-soft); 
+            color: var(--primary-red); 
+            border-color: var(--primary-red); 
+        }
+
+        /* --- Empty State --- */
+        .empty-state { text-align: center; padding: 60px 20px; }
+        .empty-state i { font-size: 48px; color: var(--border-light); margin-bottom: 16px; }
+        .empty-state h3 { font-size: 18px; font-weight: 700; color: var(--text-heading); margin-bottom: 8px; }
+        .empty-state p { font-size: 14px; color: var(--text-muted); }
+
+        /* --- Data Modal --- */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(8px); z-index: 2000; opacity: 0; visibility: hidden; transition: 0.3s; display: flex; align-items: center; justify-content: center; padding: 16px; }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-box { background: var(--surface-card); border-radius: 24px; width: 100%; max-width: 500px; box-shadow: 0 24px 48px rgba(0,0,0,0.2); transform: translateY(20px) scale(0.95); transition: 0.3s cubic-bezier(0.16, 1, 0.3, 1); overflow: hidden; }
+        .modal-overlay.active .modal-box { transform: translateY(0) scale(1); }
+        
+        .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center; background: #f8fafc; }
+        .modal-header h3 { font-size: 16px; font-weight: 800; color: var(--text-heading); }
+        .close-modal { background: none; border: none; font-size: 20px; color: var(--text-muted); cursor: pointer; transition: 0.2s; }
+        .close-modal:hover { color: var(--primary-red); }
+        
+        .modal-body { padding: 24px; max-height: 60vh; overflow-y: auto; }
+        
+        /* Modal Demo Content Lists */
+        .demo-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+        .demo-item { padding: 14px; border: 1px solid var(--border-light); border-radius: 12px; display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 600; color: var(--text-body); transition: 0.2s; cursor: pointer; }
+        .demo-item:hover { background: var(--primary-red-soft); border-color: var(--primary-red-soft); color: var(--primary-red); transform: translateX(4px); }
+        .demo-item i { color: var(--primary-red); font-size: 18px; }
+
+        /* --- Refined Mobile Spacing --- */
+        @media (min-width: 900px) { 
+            .main-content { padding: 32px 48px; } 
+        }
+        @media (max-width: 768px) {
+            .main-content { padding: 16px 12px; }
+            .glass-panel { padding: 16px; margin-bottom: 16px; }
+            .course-card { padding: 16px; }
+            .info-grid { gap: 12px; grid-template-columns: 1fr; }
+            
+            .courses-grid { grid-template-columns: 1fr; gap: 16px; }
+            .controls-row { flex-direction: column; align-items: stretch; gap: 12px; }
+            .custom-select-wrapper, .btn-print { width: 100%; }
+            .page-header h2 { font-size: 22px; }
+            .page-header { margin-top: -20px; }
+            
+            .modal-body { padding: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="overlay" id="overlay" onclick="closeAll()"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="brand-container">
+            <div class="brand-logo"><i class="fas fa-graduation-cap"></i></div>
+            <div class="brand-text">
+                <h1>Academic</h1>
+                <p>DadinCoder</p>
+            </div>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item" onclick="window.location.href='index.html'"><i class="fas fa-home"></i><span>Dashboard</span></li>
+            <li class="nav-item active" onclick="window.location.href='courses.html'"><i class="fas fa-book-open"></i><span>Registered Courses</span></li>
+            <li class="nav-item" onclick="window.location.href='profile.html'"><i class="far fa-user-circle"></i><span>Academic Profile</span></li>
+            <li class="nav-item" onclick="window.location.href='results.html'"><i class="fas fa-chart-line"></i><span>Results & Performance</span></li>
+            <li class="nav-item" onclick="window.location.href='payments.html'"><i class="fas fa-wallet"></i><span>Finance & Payments</span></li>
+            <li class="nav-item" onclick="window.location.href='onlinepayments.html'"><i class="fas fa-credit-card"></i><span>Online Payment</span></li>
+        </ul>
+        <div class="sidebar-divider"></div>
+        <ul class="nav-menu">
+            <li class="nav-item" onclick="window.location.href='settings.html'"><i class="fas fa-cog"></i><span>Settings</span></li>
+            <li class="nav-item"><i class="fas fa-sign-out-alt"></i><span>Log Out</span></li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <div class="content-wrapper">
+            
+            <!-- Top Bar -->
+            <header class="top-bar">
+                <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars" id="menuIcon"></i></button>
+            </header>
+
+            <!-- Centered Header Identity -->
+            <section class="page-header">
+                <p>Course Management</p>
+                <h2>Registered Courses</h2>
+            </section>
+
+            <!-- Custom Controls -->
+            <div class="controls-row">
+                <!-- Custom Select Dropdown -->
+                <div class="custom-select-wrapper" id="customSelect" onclick="toggleCustomSelect(event)">
+                    <div class="custom-select-trigger">
+                        <span id="selectLabel">Summer 2026 (Semester 1)</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="custom-options">
+                        <div class="custom-option selected" onclick="selectSemester('1', 'Summer 2026 (Semester 1)', event)">Summer 2026 (Semester 1)</div>
+                        <div class="custom-option" onclick="selectSemester('2', 'Semester 2', event)">Semester 2</div>
+                        <div class="custom-option" onclick="selectSemester('3', 'Semester 3', event)">Semester 3</div>
+                        <div class="custom-option" onclick="selectSemester('4', 'Semester 4', event)">Semester 4</div>
+                    </div>
+                </div>
+                <button class="btn-print smooth-card" onclick="window.print()"><i class="fas fa-print" style="color: var(--primary-red);"></i> Print Document</button>
+            </div>
+
+            <!-- Student Profile Grid -->
+            <div class="glass-panel">
+                <h3 class="section-title"><i class="fas fa-id-badge"></i> Academic Profile Details</h3>
+                <div class="info-grid">
+                    <div><span>Student ID</span><strong>02726205101005</strong></div>
+                    <div><span>Name</span><strong>Maruf Khan</strong></div>
+                    <div><span>Program</span><strong>BSc in CSE (Day)</strong></div>
+                    <div><span>Class Roll No</span><strong>02726205101005</strong></div>
+                    <div><span>Required Credit / Sem</span><strong>157.00 / 12</strong></div>
+                    <div><span>Valid Reg. (Payable) Cr.</span><strong>12.00</strong></div>
+                    <div><span>Dropped Reg. Cr.</span><strong>0.00</strong></div>
+                    <div><span>Total Registered Sem.</span><strong>1 / 12</strong></div>
+                </div>
+            </div>
+
+            <!-- VIEW: Valid Semester Data (Semester 1) -->
+            <div id="validSemesterView">
+                <div class="courses-grid">
+                    
+                    <!-- Course Card 1 (Has Demo Data) -->
+                    <div class="course-card smooth-card">
+                        <div class="course-header">
+                            <span class="c-code">BNG 1101</span>
+                            <span class="c-credit">2.0 Cr.</span>
+                        </div>
+                        <h3 class="c-title">Bangla Language and Literature [A]</h3>
+                        <div class="c-status"><i class="fas fa-check-circle"></i> Fresh Registration</div>
+                        <div class="course-actions">
+                            <button class="action-btn" onclick="openModal('topics', true, 'BNG 1101 - Topics')"><i class="fas fa-list-ul"></i> Topics</button>
+                            <button class="action-btn" onclick="openModal('resources', true, 'BNG 1101 - Resources')"><i class="fas fa-folder-open"></i> Resources</button>
+                        </div>
+                    </div>
+
+                    <!-- Course Card 2 -->
+                    <div class="course-card smooth-card">
+                        <div class="course-header">
+                            <span class="c-code">CSE 1111</span>
+                            <span class="c-credit">2.0 Cr.</span>
+                        </div>
+                        <h3 class="c-title">Introduction to Computer System [A]</h3>
+                        <div class="c-status"><i class="fas fa-check-circle"></i> Fresh Registration</div>
+                        <div class="course-actions">
+                            <button class="action-btn" onclick="openModal('topics', false, 'CSE 1111 - Topics')"><i class="fas fa-list-ul"></i> Topics</button>
+                            <button class="action-btn" onclick="openModal('resources', false, 'CSE 1111 - Resources')"><i class="fas fa-folder-open"></i> Resources</button>
+                        </div>
+                    </div>
+
+                    <!-- Course Card 3 -->
+                    <div class="course-card smooth-card">
+                        <div class="course-header">
+                            <span class="c-code">CSE 1112</span>
+                            <span class="c-credit">1.5 Cr.</span>
+                        </div>
+                        <h3 class="c-title">Introduction to Computer System Lab [A]</h3>
+                        <div class="c-status"><i class="fas fa-check-circle"></i> Fresh Registration</div>
+                        <div class="course-actions">
+                            <button class="action-btn" onclick="openModal('topics', false, 'CSE 1112 - Topics')"><i class="fas fa-list-ul"></i> Topics</button>
+                            <button class="action-btn" onclick="openModal('resources', false, 'CSE 1112 - Resources')"><i class="fas fa-folder-open"></i> Resources</button>
+                        </div>
+                    </div>
+
+                    <!-- Course Card 4 -->
+                    <div class="course-card smooth-card">
+                        <div class="course-header">
+                            <span class="c-code">ENG 1101</span>
+                            <span class="c-credit">2.0 Cr.</span>
+                        </div>
+                        <h3 class="c-title">English [A]</h3>
+                        <div class="c-status"><i class="fas fa-check-circle"></i> Fresh Registration</div>
+                        <div class="course-actions">
+                            <button class="action-btn" onclick="openModal('topics', false, 'ENG 1101 - Topics')"><i class="fas fa-list-ul"></i> Topics</button>
+                            <button class="action-btn" onclick="openModal('resources', false, 'ENG 1101 - Resources')"><i class="fas fa-folder-open"></i> Resources</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- VIEW: Empty State (Semesters 2-12) -->
+            <div id="emptySemesterView" class="glass-panel empty-state" style="display: none; margin-top: 20px;">
+                <i class="fas fa-folder-open"></i>
+                <h3>No Data Available</h3>
+                <p>You have not registered for any courses in this semester yet.</p>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Modal for Topics & Resources -->
+    <div class="modal-overlay" id="dataModal" onclick="closeModal(event)">
+        <div class="modal-box" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 id="modalTitle">Course Data</h3>
+                <button class="close-modal" onclick="closeModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Content injected via JS -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        const selectWrapper = document.getElementById('customSelect');
+        const menuIcon = document.getElementById('menuIcon');
+
+        function toggleSidebar() { 
+            sidebar.classList.toggle('open'); 
+            overlay.classList.toggle('active'); 
+            closeDropdowns(); 
+        }
+        
+        function toggleCustomSelect(e) { e.stopPropagation(); selectWrapper.classList.toggle('open'); }
+
+        function closeDropdowns() { selectWrapper.classList.remove('open'); }
+        
+        function closeAll() {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+            closeDropdowns();
+        }
+
+        // Close custom select if clicked outside
+        document.addEventListener('click', function(e) {
+            if (!selectWrapper.contains(e.target)) { selectWrapper.classList.remove('open'); }
+        });
+
+        // Semester Selection Logic
+        function selectSemester(value, label, event) {
+            event.stopPropagation();
+            document.getElementById('selectLabel').innerText = label;
+            
+            // Update active state in UI
+            document.querySelectorAll('.custom-option').forEach(opt => opt.classList.remove('selected'));
+            event.target.classList.add('selected');
+            
+            selectWrapper.classList.remove('open');
+
+            // Toggle Data View
+            if (value === '1') {
+                document.getElementById('validSemesterView').style.display = 'block';
+                document.getElementById('emptySemesterView').style.display = 'none';
+            } else {
+                document.getElementById('validSemesterView').style.display = 'none';
+                document.getElementById('emptySemesterView').style.display = 'block';
+            }
+        }
+
+        // Modal Logic
+        const dataModal = document.getElementById('dataModal');
+        function openModal(type, hasData, title) {
+            document.getElementById('modalTitle').innerText = title;
+            const body = document.getElementById('modalBody');
+            
+            if (hasData) {
+                if (type === 'topics') {
+                    body.innerHTML = `
+                        <ul class="demo-list">
+                            <li class="demo-item"><i class="fas fa-book"></i> Chapter 1: History of Bengali Language</li>
+                            <li class="demo-item"><i class="fas fa-book"></i> Chapter 2: Modern Literature</li>
+                            <li class="demo-item"><i class="fas fa-book"></i> Chapter 3: Poetry Analysis</li>
+                        </ul>
+                    `;
+                } else {
+                    body.innerHTML = `
+                        <ul class="demo-list">
+                            <li class="demo-item"><i class="fas fa-file-pdf"></i> Syllabus_Overview.pdf</li>
+                            <li class="demo-item"><i class="fas fa-video"></i> Lecture_01_Recording.mp4</li>
+                            <li class="demo-item"><i class="fas fa-file-powerpoint"></i> Chapter2_Slides.pptx</li>
+                        </ul>
+                    `;
+                }
+            } else {
+                body.innerHTML = `
+                    <div class="empty-state" style="padding: 20px;">
+                        <i class="fas fa-box-open" style="font-size: 32px; margin-bottom: 10px;"></i>
+                        <h4 style="font-size: 15px; color: var(--text-heading); margin-bottom: 4px;">No Content Available</h4>
+                        <p style="font-size: 13px; color: var(--text-muted);">The instructor has not uploaded anything here yet.</p>
+                    </div>
+                `;
+            }
+            dataModal.classList.add('active');
+        }
+
+        function closeModal(event) {
+            if (event && event.target !== dataModal) return; 
+            dataModal.classList.remove('active');
+        }
+    </script>
+</body>
+</html>

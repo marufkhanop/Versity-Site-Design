@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic Lumina - Online Registration</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            /* Premium Red & White Theme */
+            --bg-main: #f0f4f8; 
+            --surface-card: #ffffff;
+            --sidebar-bg: #ffffff;
+            
+            --primary-red: #d32f2f; 
+            --primary-red-dark: #b71c1c;
+            --primary-red-soft: #fce8e6;
+            
+            --success-green: #2a9d8f;
+            
+            --text-heading: #0f172a;
+            --text-body: #334155;
+            --text-muted: #64748b;
+            --text-subtle: #94a3b8;
+            
+            --border-light: #f1f5f9;
+            --border-separator: #cbd5e1;
+            
+            --shadow-subtle: 0 4px 12px rgba(0, 0, 0, 0.04);
+            --shadow-card: 0 12px 24px rgba(0, 0, 0, 0.06);
+            --shadow-red: 0 8px 16px rgba(211, 47, 47, 0.25);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background-color: var(--bg-main); color: var(--text-body); display: flex; min-height: 100vh; overflow-x: hidden; }
+
+        /* --- Smooth Interactions --- */
+        .smooth-card { transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); cursor: pointer; }
+        .smooth-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-card); }
+        .smooth-card:active { transform: scale(0.98); }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            position: fixed; top: 0; left: 0; height: 100vh; width: 280px;
+            background-color: var(--sidebar-bg); padding: 32px 24px;
+            display: flex; flex-direction: column; border-right: 1px solid var(--border-light);
+            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.02); transform: translateX(-100%);
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1); z-index: 1005;
+        }
+        .sidebar.open { transform: translateX(0); }
+        .brand-container { margin-bottom: 40px; display: flex; align-items: center; gap: 14px; }
+        .brand-logo { background: linear-gradient(135deg, var(--primary-red), var(--primary-red-dark)); color: white; width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: var(--shadow-red); }
+        .brand-text h1 { font-size: 18px; font-weight: 800; line-height: 1.1; color: var(--text-heading); letter-spacing: -0.02em; }
+        .brand-text p { font-size: 10px; font-weight: 700; color: var(--primary-red); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 2px; }
+
+        .nav-menu { list-style: none; flex-grow: 1; }
+        .nav-item { display: flex; align-items: center; padding: 12px 16px; margin-bottom: 6px; border-radius: 12px; color: var(--text-muted); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+        .nav-item i { width: 24px; font-size: 17px; margin-right: 12px; transition: 0.2s; }
+        .nav-item.active { background: var(--primary-red-soft); color: var(--primary-red); }
+        .nav-item:hover:not(.active) { background: #f8fafc; color: var(--text-heading); }
+        .sidebar-divider { height: 1px; background: var(--border-light); margin: 24px 0; }
+
+        /* --- Overlays --- */
+        .overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); opacity: 0; visibility: hidden; transition: all 0.3s ease; z-index: 998; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+        .overlay.active { opacity: 1; visibility: visible; }
+
+        /* --- Main Content & Red Top Splash --- */
+        .main-content { flex-grow: 1; width: 100%; padding: 24px 32px; transition: 0.3s; max-width: 1000px; margin: 0 auto; position: relative; }
+        .content-wrapper { position: relative; z-index: 1; }
+        
+        .top-red-bg { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 145px; 
+            background: linear-gradient(135deg, var(--primary-red) 0%, var(--primary-red-dark) 100%); 
+            border-bottom-left-radius: 35px; border-bottom-right-radius: 35px; z-index: 0; 
+        }
+
+        /* --- Top Bar --- */
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; position: relative; z-index: 1001; }
+        .menu-toggle { background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(8px); border: none; border-radius: 12px; font-size: 20px; cursor: pointer; color: white; padding: 8px 12px; box-shadow: var(--shadow-subtle); transition: 0.2s; }
+        .menu-toggle:hover { background: rgba(255, 255, 255, 0.25); transform: scale(1.05); }
+        .menu-toggle i { transition: transform 0.2s ease-in-out; }
+
+        .top-action-btn { background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255,255,255,0.4); backdrop-filter: blur(8px); border-radius: 12px; padding: 7px 14px; color: white; font-size: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 6px; box-shadow: var(--shadow-subtle); }
+        .top-action-btn:hover { background: rgba(255, 255, 255, 0.25); transform: translateY(-2px); }
+
+        /* --- Centered Header --- */
+        .page-header { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; margin-top: 0px; margin-bottom: 25px; color: white; }
+        .page-header p { background: linear-gradient(135deg, var(--primary-red) 0%, var(--primary-red-dark) 100%); color: white; padding: 4px 12px; border-radius: 12px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; box-shadow: var(--shadow-red); }
+        .page-header h2 { font-size: 22px; font-weight: 800; color: white; letter-spacing: -0.02em; margin-bottom: 2px; }
+
+        /* --- Alerts & Notices --- */
+        .alert-danger { 
+            background: var(--primary-red-soft); color: var(--primary-red); padding: 18px 20px; 
+            border-radius: 16px; font-size: 14px; font-weight: 600; display: flex; align-items: center; 
+            gap: 14px; border-left: 5px solid var(--primary-red); margin-bottom: 20px; 
+            box-shadow: var(--shadow-subtle); border: 1px solid rgba(211, 47, 47, 0.1);
+        }
+        
+        .glass-panel { background: var(--surface-card); border-radius: 20px; padding: 24px; margin-bottom: 20px; box-shadow: var(--shadow-subtle); border: 1px solid var(--border-light); }
+        .notice-panel { padding: 0; overflow: hidden; }
+        .notice-header { background: #f8fafc; color: var(--success-green); padding: 14px 20px; font-weight: 800; font-size: 14px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border-separator); }
+        .notice-body { padding: 18px 20px; font-size: 13px; line-height: 1.5; color: var(--text-body); font-weight: 600; }
+        .notice-label { background: var(--text-heading); color: white; padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 800; margin-right: 6px; text-transform: uppercase; }
+
+        /* Registration Panel Header */
+        .reg-header { border-bottom: 1px solid var(--border-separator); padding-bottom: 14px; margin-bottom: 18px; font-size: 16px; font-weight: 800; color: var(--text-heading); display: flex; align-items: center; gap: 8px; }
+        .reg-header i { color: var(--primary-red); }
+        
+        /* Data Tables */
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th, .data-table td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--border-separator); font-size: 14px; vertical-align: middle; }
+        .data-table th { font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; background: #f8fafc; border-bottom: 2px solid var(--border-separator); }
+        .data-table tr:last-child td { border-bottom: none; }
+        .data-table tr.selected { background: var(--primary-red-soft); }
+
+        /* FIX: Removed background styling from code badge so it inherits normal text flow cleanly */
+        .c-code { 
+            font-weight: 800; color: var(--primary-red); 
+        }
+        .c-title { font-weight: 700; color: var(--text-heading); }
+        
+        /* Custom Checkbox */
+        .custom-checkbox {
+            appearance: none; width: 22px; height: 22px; border: 2px solid var(--border-separator);
+            border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+            background: #ffffff; transition: 0.2s;
+        }
+        .custom-checkbox:checked { background: var(--primary-red); border-color: var(--primary-red); }
+        .custom-checkbox:checked::after { content: '\f00c'; font-family: 'Font Awesome 6 Free'; font-weight: 900; color: white; font-size: 12px; }
+
+        /* Footer Action */
+        .reg-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border-separator); }
+        .credit-summary { font-size: 14px; font-weight: 700; color: var(--text-muted); }
+        .credit-summary span { font-size: 18px; font-weight: 800; color: var(--primary-red); margin-left: 6px; }
+        
+        .btn-submit { background: var(--primary-red); color: white; border: none; padding: 12px 24px; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.2s; box-shadow: var(--shadow-red); }
+        .btn-submit:hover { background: var(--primary-red-dark); transform: translateY(-2px); }
+        .btn-submit:disabled { background: var(--border-separator); cursor: not-allowed; transform: none; box-shadow: none; opacity: 0.7; }
+
+        /* Dev Controls */
+        .dev-controls { margin-bottom: 20px; text-align: right; }
+        .btn-toggle { background: var(--surface-card); border: 1px solid var(--border-light); color: var(--text-muted); padding: 8px 14px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer; box-shadow: var(--shadow-subtle); transition: 0.2s; }
+        .btn-toggle:hover { color: var(--primary-red); border-color: var(--primary-red-soft); }
+
+        /* Mobile Adjustments */
+        @media (min-width: 900px) { 
+            .main-content { padding: 32px 48px; } 
+        }
+        @media (max-width: 768px) {
+            .main-content { padding: 16px 12px; }
+            .reg-footer { flex-direction: column; gap: 16px; align-items: stretch; text-align: center; }
+            .btn-submit { width: 100%; }
+            
+            .data-table thead { display: none; }
+            .data-table, .data-table tbody { display: block; width: 100%; }
+            .data-table tr { 
+                display: grid; 
+                grid-template-columns: auto 1fr auto; 
+                grid-template-areas: "check code credit" "check title title";
+                gap: 6px 12px; padding: 16px 0; align-items: center;
+                border-bottom: 1px solid var(--border-separator); 
+            }
+            .data-table td { padding: 0 !important; border: none; }
+            
+            /* FIX: Added safe padding around the checkbox container so the checkbox is well-centered and doesn't touch edges */
+            .td-check { grid-area: check; display: flex; align-items: center; justify-content: center; padding-left: 12px !important; padding-right: 12px !important; }
+            .td-code { grid-area: code; }
+            .td-title { grid-area: title; font-size: 14px; margin-bottom: 2px; }
+            .td-credit { grid-area: credit; text-align: right !important; font-size: 14px; font-weight: 800; color: var(--primary-red); padding-right: 12px !important; }
+            .td-credit::after { content: " Cr."; font-weight: 700; font-size: 11px; }
+            .page-header { margin-top: 5px; }
+            .top-red-bg { height: 140px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="overlay" id="overlay" onclick="closeAll()"></div>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="brand-container">
+            <div class="brand-logo"><i class="fas fa-graduation-cap"></i></div>
+            <div class="brand-text">
+                <h1>Academic</h1>
+                <p>DadinCoder</p>
+            </div>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item" onclick="window.location.href='index.html'"><i class="fas fa-home"></i><span>Dashboard</span></li>
+            <li class="nav-item" onclick="window.location.href='courses.html'"><i class="fas fa-book-open"></i><span>Registered Courses</span></li>
+            <li class="nav-item" onclick="window.location.href='profile.html'"><i class="far fa-user-circle"></i><span>Academic Profile</span></li>
+            <li class="nav-item" onclick="window.location.href='results.html'"><i class="fas fa-chart-line"></i><span>Results & Performance</span></li>
+            <li class="nav-item" onclick="window.location.href='payments.html'"><i class="fas fa-wallet"></i><span>Finance & Payments</span></li>
+            <li class="nav-item" onclick="window.location.href='onlinepayments.html'"><i class="fas fa-credit-card"></i><span>Online Payment</span></li>
+        </ul>
+        <div class="sidebar-divider"></div>
+        <ul class="nav-menu">
+            <li class="nav-item" onclick="window.location.href='settings.html'"><i class="fas fa-cog"></i><span>Settings</span></li>
+            <li class="nav-item"><i class="fas fa-sign-out-alt"></i><span>Log Out</span></li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <div class="top-red-bg"></div>
+
+        <div class="content-wrapper">
+            <header class="top-bar">
+                <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars" id="menuIcon"></i></button>
+                <button class="top-action-btn smooth-card"><i class="far fa-id-card"></i> Admit Card</button>
+            </header>
+
+            <section class="page-header">
+                <p>Enrollment Portal</p>
+                <h2>Online Course Registration</h2>
+            </section>
+
+            <!-- Dev Toggle (For Demonstration) -->
+            <div class="dev-controls">
+                <button class="btn-toggle smooth-card" onclick="toggleErrorState()">Toggle Demo Error State</button>
+            </div>
+
+            <!-- ============================================== -->
+            <!-- VIEW: ERROR STATE -->
+            <!-- ============================================== -->
+            <div id="errorState" style="display: none;">
+                <div class="alert-danger">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 20px;"></i>
+                    <div>
+                        <strong>Attention Please!</strong><br>
+                        <span style="font-size: 13px; font-weight: 600;">There is no Registrable Semester offered. Unable to load Data!</span>
+                    </div>
+                </div>
+
+                <div class="glass-panel notice-panel">
+                    <div class="notice-header">
+                        <i class="fas fa-info-circle"></i> Important Notice
+                    </div>
+                    <div class="notice-body">
+                        <span class="notice-label">Note:</span> Registration window is currently closed. Please contact the registrar's office for late enrollment.
+                    </div>
+                </div>
+                
+                <div class="glass-panel" style="text-align: center; padding: 40px 20px;">
+                    <div class="reg-header" style="border: none; margin: 0; justify-content: center; color: var(--text-heading);">Course Registration for Semester:</div>
+                    <div style="display: inline-block; background: var(--primary-red); color: white; padding: 6px 16px; border-radius: 8px; font-size: 12px; font-weight: 800; margin-top: 10px; text-transform: uppercase; box-shadow: var(--shadow-red);">Attention: No Data</div>
+                </div>
+            </div>
+
+            <!-- ============================================== -->
+            <!-- VIEW: ACTIVE STATE -->
+            <!-- ============================================== -->
+            <div id="activeState">
+                
+                <div class="glass-panel notice-panel" style="margin-bottom: 24px;">
+                    <div class="notice-header">
+                        <i class="fas fa-info-circle"></i> Important Notice
+                    </div>
+                    <div class="notice-body">
+                        <span class="notice-label">Note:</span> Please review your selected courses carefully. You can select up to a maximum of 15 credits per semester.
+                    </div>
+                </div>
+
+                <div class="glass-panel">
+                    <div class="reg-header">
+                        <i class="fas fa-clipboard-list"></i> Course Registration for Semester: Fall 2026 (6M)
+                    </div>
+                    
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th width="60">Select</th>
+                                <th>Course Code</th>
+                                <th>Course Title</th>
+                                <th class="text-center">Credits</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Course 1 -->
+                            <tr id="row-cse2111">
+                                <td class="td-check">
+                                    <input type="checkbox" class="custom-checkbox course-check" data-credit="3.0" onchange="calculateCredits(this, 'row-cse2111')">
+                                </td>
+                                <td class="td-code c-code">CSE 2111</td>
+                                <td class="td-title c-title">Data Structures & Algorithms [A]</td>
+                                <td class="td-credit text-center">3.0</td>
+                            </tr>
+                            <!-- Course 2 -->
+                            <tr id="row-cse2112">
+                                <td class="td-check">
+                                    <input type="checkbox" class="custom-checkbox course-check" data-credit="1.5" onchange="calculateCredits(this, 'row-cse2112')">
+                                </td>
+                                <td class="td-code c-code">CSE 2112</td>
+                                <td class="td-title c-title">Data Structures Lab [A]</td>
+                                <td class="td-credit text-center">1.5</td>
+                            </tr>
+                            <!-- Course 3 -->
+                            <tr id="row-math2101">
+                                <td class="td-check">
+                                    <input type="checkbox" class="custom-checkbox course-check" data-credit="3.0" onchange="calculateCredits(this, 'row-math2101')">
+                                </td>
+                                <td class="td-code c-code">MATH 2101</td>
+                                <td class="td-title c-title">Linear Algebra and Geometry [A]</td>
+                                <td class="td-credit text-center">3.0</td>
+                            </tr>
+                            <!-- Course 4 -->
+                            <tr id="row-eng2101">
+                                <td class="td-check">
+                                    <input type="checkbox" class="custom-checkbox course-check" data-credit="2.0" onchange="calculateCredits(this, 'row-eng2101')">
+                                </td>
+                                <td class="td-code c-code">ENG 2101</td>
+                                <td class="td-title c-title">Advanced English Communication [A]</td>
+                                <td class="td-credit text-center">2.0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="reg-footer">
+                        <div class="credit-summary">
+                            Total Selected Credits: <span id="totalCredits">0.0</span>
+                        </div>
+                        <button class="btn-submit smooth-card" id="submitBtn" disabled onclick="alert('Registration Successful!')">Confirm Registration</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        const menuIcon = document.getElementById('menuIcon');
+
+        function toggleSidebar() { 
+            sidebar.classList.toggle('open'); 
+            overlay.classList.toggle('active'); 
+            
+            if (sidebar.classList.contains('open')) {
+                menuIcon.classList.remove('fa-bars');
+                menuIcon.classList.add('fa-times');
+            } else {
+                menuIcon.classList.remove('fa-times');
+                menuIcon.classList.add('fa-bars');
+            }
+        }
+        
+        function closeAll() {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+            menuIcon.classList.remove('fa-times');
+            menuIcon.classList.add('fa-bars');
+        }
+
+        // Logic for calculating credits and enabling the submit button
+        function calculateCredits(checkbox, rowId) {
+            const row = document.getElementById(rowId);
+            
+            if (checkbox.checked) {
+                row.classList.add('selected');
+            } else {
+                row.classList.remove('selected');
+            }
+
+            const checkboxes = document.querySelectorAll('.course-check');
+            let total = 0;
+            let count = 0;
+
+            checkboxes.forEach(cb => {
+                if(cb.checked) {
+                    total += parseFloat(cb.getAttribute('data-credit'));
+                    count++;
+                }
+            });
+
+            document.getElementById('totalCredits').innerText = total.toFixed(1);
+            
+            const submitBtn = document.getElementById('submitBtn');
+            if (count > 0) {
+                submitBtn.disabled = false;
+            } else {
+                submitBtn.disabled = true;
+            }
+        }
+
+        // Logic to toggle between error state and working form
+        function toggleErrorState() {
+            const errorView = document.getElementById('errorState');
+            const activeView = document.getElementById('activeState');
+
+            if (errorView.style.display === 'none') {
+                errorView.style.display = 'block';
+                activeView.style.display = 'none';
+            } else {
+                errorView.style.display = 'none';
+                activeView.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>
